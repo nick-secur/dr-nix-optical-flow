@@ -33,6 +33,14 @@
       min-width: 50px;
     }
 
+    #zone-size, #scale {
+      width: 50px;
+    }
+
+    #test-box-display {
+      display: none
+    }
+
   </style>
 
 </head>
@@ -49,12 +57,24 @@
     <span id="zone-size-display"></span>
     <span class="spacer"></span>
     <label>zones: </label>
+
     <input type="text" id="zone-size" />
+    <button id="zone-size-button">set</button>
+
     <span class="spacer"></span>
+    <label>scale: </label>
+    <input type="text" id="scale" />
+    <button id="scale-button">set</button>
+
+
     <button onclick="location.reload();">Refresh</button>
   </div>
 
   <div class="controls">
+    <label>Video: </label>
+    <input type="text" id="video-name" />
+    <button id="video-name-button">set video</button>
+    <span class="spacer"></span>
     <button id="go-button">Start</button>
   </div>
 
@@ -63,7 +83,8 @@
            muted
            controls
     >
-      <source src="./vid/ms_fluid_mov.mp4"
+      <source id="vid-source-tag"
+              src="./vid/ms_fluid_mov.mp4"
               type="video/mp4">
     </video>
   </div>
@@ -75,6 +96,8 @@
 
   <div id="test-box-display"
        class="test-box"></div>
+
+</div>
 
 <script src="./oflow/dist/oflow.js"></script>
 <script type="text/javascript">
@@ -109,9 +132,7 @@
   //const zoneSize = 64;
   let zoneSize = 100;
   document.getElementById('zone-size-display').innerText = zoneSize;
-
-  const scaleFactor = 0.75;
-
+  let scaleFactor = 0.75;
   let flowObj;
   let vidW, vidH;
 
@@ -123,8 +144,6 @@
     videoElement.setAttribute("height", "" + (vidH * scaleFactor));
     canvas.setAttribute("width", "" + (vidW * scaleFactor));
     canvas.setAttribute("height", "" + (vidH * scaleFactor));
-
-
   }, false );
 
 
@@ -210,8 +229,17 @@
     return (Math.round ( num * 100 ) / 2 );
   }
 
+  function setZones(event)  {
+      event.preventDefault();
+      zoneSize = parseInt ( document.getElementById("zone-size").value );
+      document.getElementById('zone-size-display').innerText = zoneSize;
+  }
+
 
   const numZonesInput = document.getElementById("zone-size");
+  const numZonesButton = document.getElementById("zone-size-button");
+
+  numZonesButton.addEventListener("click", setZones);
   numZonesInput.addEventListener("keyup", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -219,6 +247,34 @@
       document.getElementById('zone-size-display').innerText = zoneSize;
     }
   });
+
+  const scaleButton = document.getElementById("scale-button");
+  const scaleInput = document.getElementById("scale");
+  scaleButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      // todo: set the scale
+      scaleFactor = parseFloat ( document.getElementById("scale").value );
+
+      console.log( scaleFactor );
+
+      vidW = videoElement.videoWidth;
+      vidH = videoElement.videoHeight;
+      videoElement.setAttribute("width", "" + (vidW * scaleFactor));
+      videoElement.setAttribute("height", "" + (vidH * scaleFactor));
+      canvas.setAttribute("width", "" + (vidW * scaleFactor));
+      canvas.setAttribute("height", "" + (vidH * scaleFactor));
+  });
+
+  const videoButton = document.getElementById("video-name-button");
+  const videoName = document.getElementById("video-name");
+  videoButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    const name = document.getElementById("video-name").value ;
+    const vidSrcElem = document.getElementById("vid-source-tag");
+    vidSrcElem.setAttribute("src", "./vid/" + name ) ;
+    videoElement.load();
+  });
+
 
 </script>
 </body>
