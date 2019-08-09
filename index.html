@@ -5,24 +5,33 @@
 
   <style type="text/css">
 
-body {
-  font-family: sans-serif;
-}
+    body {
+      font-family: sans-serif;
+    }
 
+    video {
+      border: solid 1px black;
+    }
 
-.video-wrap, .canvas-wrap {
-  margin: 2em;
-  margin-left: 4em;
-}
+    .video-wrap {
+      /*
+      text-align: center;
+      */
+    }
 
-.canvas-wrap > canvas {
-  /* background-color: #eee */
-}
+    .video-wrap, .canvas-wrap {
+      margin: 2em;
+      margin-left: 4em;
+    }
 
-.spacer {
-  display: inline-block;
-  min-width: 50px;
-}
+    .canvas-wrap > canvas {
+      /* background-color: #eee */
+    }
+
+    .spacer {
+      display: inline-block;
+      min-width: 50px;
+    }
 
   </style>
 
@@ -30,157 +39,131 @@ body {
 
 <body>
 
-  <div>
-    <h1>Optical Flow</h1>
+<div>
+  <h1>Optical Flow</h1>
 
-    <div>
+<!--  <div></div>-->
 
-
-
-    </div>
-
-    <div class="controls">
-      <span class="zone-val">Current zone size: </span>
-      <span id="zone-size-display"></span>
-      <span class="spacer"></span>
-      <label>zones: </label>
-      <input type="text" id="zone-size" />
-      <span class="spacer"></span>
-      <button onclick="location.reload();">Refresh</button>
-    </div>
-
-    <div class="controls">
-
-      <button id="go-button">Start</button>
-
-    </div>
-
-
-    <div class='video-wrap'>
-
-      <video id="test-vid"
-        muted
-        controls
-      >
-
-        <source src="./vid/LotteThatSilhouetteGirl_1920x1080_Clip01.mp4"
-                type="video/mp4">
-      </video>
-    </div>
-
-    <div class="canvas-wrap">
-      <canvas id='flow-canvas'
-      ></canvas>
-    </div>
-
-    <div id="test-box-display"
-      class="test-box"></div>
-
-    <div>
-      <h2>Resources</h2>
-      <ol>
-        <li>
-          <a href='https://en.wikipedia.org/wiki/Optical_flow#/media/File:Opticfloweg.png'>Optical flow explained</a>
-        </li>
-
-        <li>
-          <a href='https://github.com/anvaka/oflow'>Simple optical flow library</a>
-        </li>
-        <li>
-          <a href='http://www.lotte-movie.com/press-downloads'>Lotte Reiniger</a>
-        </li>
-      </ol>
-    </div>
+  <div class="controls">
+    <span class="zone-val">Current zone size: </span>
+    <span id="zone-size-display"></span>
+    <span class="spacer"></span>
+    <label>zones: </label>
+    <input type="text" id="zone-size" />
+    <span class="spacer"></span>
+    <button onclick="location.reload();">Refresh</button>
   </div>
 
-  <script src="./oflow/dist/oflow.js"></script>
-  <script type="text/javascript">
+  <div class="controls">
+    <button id="go-button">Start</button>
+  </div>
 
-/*
-todo start playing with the math
+  <div class='video-wrap'>
+    <video id="test-vid"
+           muted
+           controls
+    >
+      <source src="./vid/ms_fluid_mov.mp4"
+              type="video/mp4">
+    </video>
+  </div>
 
-how are you going to define a threshold to signal relative motion detection (i.e., fluid or powder)?
+  <div class="canvas-wrap">
+    <canvas id='flow-canvas'
+    ></canvas>
+  </div>
 
-Consider that you have: (1) a vector which represents the overall viz field flow, and (2) an array of vectors representing flow for some number of zones...
+  <div id="test-box-display"
+       class="test-box"></div>
 
-Things to look at:
+<script src="./oflow/dist/oflow.js"></script>
+<script type="text/javascript">
 
-1. VARIANCE of zone vectors
+  /*
+  todo start playing with the math
 
-2. deviations of zone vectors from mean (i.e., overall flow)
+  how are you going to define a threshold to signal relative motion detection (i.e., fluid or powder)?
 
-Also, toward vizualization, look at associcating magnitude and direction of zone vectors with colors...
+  Consider that you have: (1) a vector which represents the overall viz field flow, and (2) an array of vectors representing flow for some number of zones...
+
+  Things to look at:
+
+  1. VARIANCE of zone vectors
+
+  2. deviations of zone vectors from mean (i.e., overall flow)
+
+  Also, toward vizualization, look at associcating magnitude and direction of zone vectors with colors...
 
 
-*/
+  */
 
-const videoElement = document.getElementById( 'test-vid' );
-const canvas = document.getElementById('flow-canvas');
-const graphicsCtx = canvas.getContext( '2d' );
-const testBox = document.getElementById( 'test-box-display' );
+  const videoElement = document.getElementById( 'test-vid' );
+  const canvas = document.getElementById('flow-canvas');
+  const graphicsCtx = canvas.getContext( '2d' );
+  const testBox = document.getElementById( 'test-box-display' );
 
-testBox.innerText = "TEST";
+  testBox.innerText = "TEST";
 
-//todo  zoneSize ~~ and the convolution matrix
-//const zoneSize = 8;
-//const zoneSize = 64;
-let zoneSize = 100;
-document.getElementById('zone-size-display').innerText = zoneSize;
+  //todo  zoneSize ~~ and the convolution matrix
+  //const zoneSize = 8;
+  //const zoneSize = 64;
+  let zoneSize = 100;
+  document.getElementById('zone-size-display').innerText = zoneSize;
 
-const SCALE_FACTOR = 0.25;
+  const scaleFactor = 0.75;
 
-let flowObj;
-let vidW, vidH;
+  let flowObj;
+  let vidW, vidH;
 
-videoElement.addEventListener( "loadedmetadata", function (e) {
+  videoElement.addEventListener( "loadedmetadata", function (e) {
     vidW = videoElement.videoWidth;
     vidH = videoElement.videoHeight;
     // [1920, 1080]
-    videoElement.setAttribute("width", "" + (vidW * SCALE_FACTOR));
-    videoElement.setAttribute("height", "" + (vidH * SCALE_FACTOR));
-    canvas.setAttribute("width", "" + (vidW * SCALE_FACTOR));
-    canvas.setAttribute("height", "" + (vidH * SCALE_FACTOR));
+    videoElement.setAttribute("width", "" + (vidW * scaleFactor));
+    videoElement.setAttribute("height", "" + (vidH * scaleFactor));
+    canvas.setAttribute("width", "" + (vidW * scaleFactor));
+    canvas.setAttribute("height", "" + (vidH * scaleFactor));
 
 
-}, false );
+  }, false );
 
 
-function go () {
+  function go () {
 
     flowObj = new oflow.VideoFlow(videoElement, zoneSize);
 
     // flowObj = new oflow.VideoFlow(videoElement, zoneSize);
     flowObj.onCalculated(function (direction) {
-        // direction is an object which describes current flow:
-        // direction.u, direction.v {floats} general flow vector
-        // direction.zones {Array} is a collection of flowZones.
-        // Each flow zone describes optical flow direction inside of it.
-        // flowZone : {
-        //  x, y // zone center
-        //  u, v // vector of flow in the zone
-        // }
+      // direction is an object which describes current flow:
+      // direction.u, direction.v {floats} general flow vector
+      // direction.zones {Array} is a collection of flowZones.
+      // Each flow zone describes optical flow direction inside of it.
+      // flowZone : {
+      //  x, y // zone center
+      //  u, v // vector of flow in the zone
+      // }
 
-        clearCanvas(canvas);
-        graphicsCtx.fillStyle = "#FF0000";
-        drawVector(graphicsCtx, canvas.width / 2, canvas.height / 2, direction.u * SCALE_FACTOR, direction.v * SCALE_FACTOR);
-        graphicsCtx.fillStyle = "#0000FF";
-        direction.zones.forEach(z => {
-            drawVector(
+      clearCanvas(canvas);
+      graphicsCtx.fillStyle = "#FF0000";
+      drawVector(graphicsCtx, canvas.width / 2, canvas.height / 2, direction.u * scaleFactor, direction.v * scaleFactor);
+      graphicsCtx.fillStyle = "#0000FF";
+      direction.zones.forEach(z => {
+        drawVector(
                 graphicsCtx,
-                z.x * SCALE_FACTOR,
-                z.y * SCALE_FACTOR,
-                z.u * SCALE_FACTOR,
-                z.v * SCALE_FACTOR
-            );
-        });
+                z.x * scaleFactor,
+                z.y * scaleFactor,
+                z.u * scaleFactor,
+                z.v * scaleFactor
+        );
+      });
 
-        let testText = "[ ";
-        testText += round2(direction.u);
-        testText += ", ";
-        testText += round2(direction.v);
-        testText += " ]";
+      let testText = "[ ";
+      testText += round2(direction.u);
+      testText += ", ";
+      testText += round2(direction.v);
+      testText += " ]";
 
-        testBox.innerText = testText;
+      testBox.innerText = testText;
 
     });
 
@@ -189,54 +172,54 @@ function go () {
 
     let testEnd;
     setTimeout( () => {
-        console.log( "capture end" );
-        testEnd = testBox.innerText;
-        console.log( testEnd );
-        flowObj.stopCapture();
+      console.log( "capture end" );
+      testEnd = testBox.innerText;
+      console.log( testEnd );
+      flowObj.stopCapture();
     }, 1000 * 60 - 100 ) ;
 
     setTimeout( () => {
-        console.log( "end state" );
-        testBox.innerText = testEnd;
-        flowObj = null;
+      console.log( "end state" );
+      testBox.innerText = testEnd;
+      flowObj = null;
     }, 1000 * 60 + 100 ) ;
 
 
 
-}
+  }
 
-document.getElementById('go-button').onclick = go;
+  document.getElementById('go-button').onclick = go;
 
 
-function clearCanvas( canvas ) {
+  function clearCanvas( canvas ) {
     const graphicsCtx = canvas.getContext( '2d' );
     graphicsCtx.clearRect( 0, 0, canvas.width, canvas.height);
     graphicsCtx.fillStyle = "#eeeeee";
     graphicsCtx.fillRect( 0, 0, canvas.width, canvas.height);
-}
+  }
 
-function drawVector ( ctx, x, y, u, v ) {
+  function drawVector ( ctx, x, y, u, v ) {
     ctx.beginPath();
     ctx.moveTo( x, y );
     ctx.lineTo( x+u, y+v );
     ctx.arc( x, y, 1, 0, 2 );
     ctx.fill();
-}
+  }
 
-function round2(num) {
+  function round2(num) {
     return (Math.round ( num * 100 ) / 2 );
-}
+  }
 
 
-const numZonesInput = document.getElementById("zone-size");
-numZonesInput.addEventListener("keyup", (event) => {
+  const numZonesInput = document.getElementById("zone-size");
+  numZonesInput.addEventListener("keyup", (event) => {
     if (event.key === "Enter") {
-        event.preventDefault();
-        zoneSize = parseInt ( event.target.value );
-        document.getElementById('zone-size-display').innerText = zoneSize;
+      event.preventDefault();
+      zoneSize = parseInt ( event.target.value );
+      document.getElementById('zone-size-display').innerText = zoneSize;
     }
-});
+  });
 
-  </script>
+</script>
 </body>
 </html>
