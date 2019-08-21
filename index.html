@@ -50,13 +50,11 @@
 <div>
   <h1>Optical Flow</h1>
 
-<!--  <div></div>-->
-
   <div class="controls">
     <span class="zone-val">Current zone size: </span>
     <span id="zone-size-display"></span>
     <span class="spacer"></span>
-    <label>zones: </label>
+    <label>zone size: </label>
 
     <input type="text" id="zone-size" />
     <button id="zone-size-button">set</button>
@@ -83,9 +81,12 @@
            muted
            controls
     >
+
+      <!-- src="./vid/ms_fluid_mov.mp4" -->
       <source id="vid-source-tag"
-              src="./vid/ms_fluid_mov.mp4"
+              src="./vid/Water.mp4"
               type="video/mp4">
+
     </video>
   </div>
 
@@ -100,6 +101,7 @@
 </div>
 
 <script src="./oflow/dist/oflow.js"></script>
+<script src="./nix/draw-vector.js"></script>
 <script src="./nix/dr-nix.js"></script>
 
 </body>

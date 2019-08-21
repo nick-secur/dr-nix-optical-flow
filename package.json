@@ -4,14 +4,11 @@
   "description": "Optical flow rapid concept proof",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "optical-flow": "live-server"
   },
-  "author": "",
+  "author": "Dr. Nick",
   "license": "ISC",
   "dependencies": {
-    "http-server": "^0.11.1"
-  },
-  "scripts": {
-    "optical-flow": "http-server"
+    "live-server": "^1.2.1"
   }
 }

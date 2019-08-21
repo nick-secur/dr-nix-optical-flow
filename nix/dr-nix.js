@@ -25,11 +25,9 @@ const testBox = document.getElementById( 'test-box-display' );
 testBox.innerText = "TEST";
 
 //todo  zoneSize ~~ and the convolution matrix
-//const zoneSize = 8;
-//const zoneSize = 64;
-let zoneSize = 100;
+let zoneSize = 8;
 document.getElementById('zone-size-display').innerText = zoneSize;
-let scaleFactor = 0.75;
+let scaleFactor = 1;
 let flowObj;
 let vidW, vidH;
 
@@ -48,7 +46,8 @@ function go () {
 
     flowObj = new oflow.VideoFlow(videoElement, zoneSize);
 
-    // flowObj = new oflow.VideoFlow(videoElement, zoneSize);
+
+
     flowObj.onCalculated(function (direction) {
         // direction is an object which describes current flow:
         // direction.u, direction.v {floats} general flow vector
@@ -114,13 +113,13 @@ function clearCanvas( canvas ) {
     graphicsCtx.fillRect( 0, 0, canvas.width, canvas.height);
 }
 
-function drawVector ( ctx, x, y, u, v ) {
-    ctx.beginPath();
-    ctx.moveTo( x, y );
-    ctx.lineTo( x+u, y+v );
-    ctx.arc( x, y, 1, 0, 2 );
-    ctx.fill();
-}
+// function drawVector ( ctx, x, y, u, v ) {
+//     ctx.beginPath();
+//     ctx.moveTo( x, y );
+//     ctx.lineTo( x+u, y+v );
+//     ctx.arc( x, y, 1, 0, 2 );
+//     ctx.fill();
+// }
 
 function round2(num) {
     return (Math.round ( num * 100 ) / 2 );
