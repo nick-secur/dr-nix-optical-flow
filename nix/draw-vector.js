@@ -1,4 +1,4 @@
-const THRESHHOLD = 0;
+const THRESHHOLD = 5;
 
 
 
@@ -31,7 +31,7 @@ let cntr = 0;
 
 function drawVector ( ctx, x, y, u, v ) {
 
-    if ( (cntr < 10) && ((getMagnitude(u, v) > 2)) ) {
+    if ( (cntr < 10) && ((getMagnitude(u, v) > THRESHHOLD)) ) {
         console.log( "TEST" );
 
         console.log( u, v );
@@ -40,7 +40,7 @@ function drawVector ( ctx, x, y, u, v ) {
         cntr ++;
     }
 
-    if( getMagnitude(u, v) > 2 ) {
+    if( getMagnitude(u, v) > THRESHHOLD ) {
 
         ctx.beginPath();
         ctx.moveTo( x, y );
